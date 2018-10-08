@@ -1,94 +1,48 @@
 import React, { Component } from 'react';
+import Question from './question'
+import Data from './data.js'
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      prediction: 'yes',
-      feedback: 'yes',
-      score: '👍'
+      score: 0
     };
   }
 
-  handlePredictionChange = (changeEvent) => {
-    let prediction = changeEvent.target.value;
-    let score = '';
+  handleQuestionAnswered = (index, prediction) => {
+    Data[index].prediction = prediction;
+    const scoreReducer = (accumulator, currentValue) => 
+    {
+      return currentValue.prediction && currentValue.answer === currentValue.prediction ? 
+      accumulator+1 : accumulator;
 
-    if(prediction === this.state.feedback)  
-      score = '👍';
-    else
-      score = '👎';
-
+    }
+    let score = Data.reduce(scoreReducer, 0);
+    score = score / Data.length * 100;
     this.setState({
-      prediction: prediction,
-      score: score
-    });
-  }
-  
-  handleFeedbackChange = (changeEvent) => {
-    let feedback = changeEvent.target.value;
-    let score = '';
-
-    if(this.state.prediction === feedback)  
-      score = '👍';
-    else
-      score = '👎';
-    
-    this.setState({
-      feedback: feedback,
-      score: score
-    });
+      score
+    })
   }
 
   render() {
-    return (
-    <div>
-      <fieldset>
-          <legend>Will the stock market close positive tomorrow?</legend>
-
-          <div>
-              <input type="radio" id="pyes" 
-                    name="prediction" value="yes" 
-                    checked={this.state.prediction === 'yes'} 
-                    onChange={this.handlePredictionChange} />
-              <label htmlFor="pyes">Yes</label>
-          </div>
-
-          <div>
-              <input type="radio" id="pno" 
-                    name="prediction" value="no" 
-                    checked={this.state.prediction === 'no'} 
-                    onChange={this.handlePredictionChange} />
-              <label htmlFor="pno">No</label>
-          </div>
-
-      </fieldset>
+    const Questions = () => {
+      return Data.map((e, index) =>
+        <Question key={e.id} 
+          index={index}
+          id={e.id}
+          question={e.question}
+          answer={e.answer}
+          prediction={e.prediction}
+          onQuestionAnswered={this.handleQuestionAnswered} />
+      );
+    }
     
-      <fieldset>
-          <legend>Did the stock market actually close positive?</legend>
-
-          <div>
-              <input type="radio" id="fyes" 
-                    name="feedback" value="yes" 
-                    checked={this.state.feedback === 'yes'} 
-                    onChange={this.handleFeedbackChange} />
-              <label htmlFor="fyes">Yes</label>
-          </div>
-
-          <div>
-              <input type="radio" id="fno" 
-                    name="feedback" value="no" 
-                    checked={this.state.feedback === 'no'} 
-                    onChange={this.handleFeedbackChange} />
-              <label htmlFor="fno">No</label>
-          </div>
-
-      </fieldset>
-
-      <div>Your Score: {this.state.score}</div>
-
-
-    </div>
+    return (
+    <React.Fragment>
+      <Questions />
+      <div>Your Score: {this.state.score}%</div>
+    </React.Fragment>
     );
   }
 }
